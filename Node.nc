@@ -56,9 +56,13 @@ implementation{
    }
 
    event void HelloTimer.fired() {
+      // Variable Declarations before the code
+      uint8_t payload[2];
+
+      
       dbg(GENERAL_CHANNEL, "HelloTimer Fired, sending hello message\n");
       //Creating hello message
-      uint8_t payload[2];
+
       payload[0] = (uint8_t)(TOS_NODE_ID & 0xFF);
       payload[1] = (uint8_t)((TOS_NODE_ID >> 8) & 0xFF);
 
@@ -72,6 +76,12 @@ implementation{
    event void AMControl.stopDone(error_t err){}
 
    event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len){
+      //Variable Definitions, getting weird error with them being defined later in code
+      uint16_t senderNodeID;
+      bool isNeighbor = FALSE;
+      uint8_t i;
+
+
       dbg(GENERAL_CHANNEL, "Packet Received\n");
       if(len==sizeof(pack)){
          pack* myMsg = (pack*) payload;
@@ -80,14 +90,13 @@ implementation{
          dbg(GENERAL_CHANNEL, "Valid Packet Received.\n");
 
          // Extract the senders node id and rebuild to 16 bits
-         uint16_t senderNodeID = (myMsg->payload[1] << 8) | myMsg->payload[0];
+         senderNodeID = (myMsg->payload[1] << 8) | myMsg->payload[0];
 
          //dbg to show the extracted id
          dbg(GENERAL_CHANNEL, "Sender Node ID: %d\n", senderNodeID);
 
          // Checking to see if the neighbor is in the cache
-         bool isNeighbor = FALSE;
-         for (uint8_t i = 0; i < neighborCount; i++) {
+         for (i = 0; i < neighborCount; i++) {
             if (neighborList[i] == senderNodeID) {
                isNeighbor = TRUE;
                break;
@@ -121,6 +130,9 @@ implementation{
    }
 
    event void CommandHandler.printNeighbors(){
+      //Variable declarations 
+      uint8_t i;
+
       dbg(GENERAL_CHANNEL, "Neighbor List:\n");
 
       //Checking for neighbors
@@ -130,7 +142,7 @@ implementation{
       }
 
       //Looping through the neighbors list to print the neighbors ID
-      for (uint8_t i = 0; i < neighborCount; i++) {
+      for (i = 0; i < neighborCount; i++) {
          dbg(GENERAL_CHANNEL, "Neighbor %d: Node ID = %d\n", i + 1, neighborList[i]);
       }
    }

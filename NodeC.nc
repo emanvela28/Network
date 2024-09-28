@@ -17,10 +17,13 @@ implementation {
     components MainC;
     components Node;
     components new AMReceiverC(AM_PACK) as GeneralReceive;
+    components new TimerMilliC() as HelloTimerMilliC;
 
     Node -> MainC.Boot;
 
     Node.Receive -> GeneralReceive;
+
+    Node.HelloTimer -> HelloTimerMilliC;
 
     components ActiveMessageC;
     Node.AMControl -> ActiveMessageC;
