@@ -11,32 +11,46 @@
 #include "includes/CommandMsg.h"
 #include "includes/packet.h"
 
-configuration NodeC{
+configuration NodeC {
+    provides {
+        interface Boot;
+    }
 }
+
 implementation {
     components MainC;
     components Node;
+    components FloodingP;
+    components NeighborDiscoveryP;
     components new AMReceiverC(AM_PACK) as GeneralReceive;
-    components new TimerMilliC() as HelloTimerMilliC;
+    components new TimerMilliC() as HelloTimerMilliC;  // Using TimerMilliC for HelloTimer
 
-    Node -> MainC.Boot;
+    // Properly connecting Boot to MainC.Boot
+    Boot = MainC.Boot;
 
+    // Wiring Receive interface
     Node.Receive -> GeneralReceive;
 
-    Node.HelloTimer -> HelloTimerMilliC;
+    // Wiring HelloTimer used in NeighborDiscoveryP to HelloTimerMilliC
+    NeighborDiscoveryP.HelloTimer -> HelloTimerMilliC;  // Wire NeighborDiscoveryP's HelloTimer to TimerMilliC
 
     components ActiveMessageC;
     Node.AMControl -> ActiveMessageC;
 
+    // Wiring SimpleSend interface for sending messages
     components new SimpleSendC(AM_PACK);
-    Node.Sender -> SimpleSendC;
+    Node.Sender -> SimpleSendC;               // Node is wired to SimpleSendC
+    NeighborDiscoveryP.Sender -> SimpleSendC; // Wire NeighborDiscoveryP.Sender to SimpleSendC
 
+    // Wiring CommandHandler
     components CommandHandlerC;
     Node.CommandHandler -> CommandHandlerC;
 
+    // Wiring Flooding
     components FloodingC;
     Node.Flooding -> FloodingC;
 
+    // Wiring NeighborDiscovery
     components NeighborDiscoveryC;
     Node.NeighborDiscovery -> NeighborDiscoveryC;
 }
